@@ -7,33 +7,35 @@ from voice_interface import VoiceCommandInterface
 intents = discord.Intents.default()
 intents.message_content = True
 
-command_flag = False
-
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or("."), 
-    description='Private Bot for reliable music streaming.',
+    description='pycord-voice-interface example',
     intents= intents
 )
 
+# 2nd argument should be a function taking (data: io.BytesIO, framerate: int, commands: list[str]) and returning the detected words as str
 voice_interface = VoiceCommandInterface(bot, speech_to_text)
 
 @bot.command()
-async def join(ctx):  # If you're using commands.Bot, this will also work.\
+async def join(ctx):
     
+    # Custom Sink for reading .wav encoded audio as a stream
     sink = StreamSink()
-    voice = ctx.author.voice
-
-    vc = await voice.channel.connect()  # Connect to the voice channel the author is in.
-
+    vc = await voice.channel.connect() 
+    
+    # Regular pycord start_recording method
     vc.start_recording(
         sink,
-        lambda x, y: x, # Pass false callback since we don't need one (will error - not a coroutine, but we don't care)
+        lambda x, y: x, #will error - not a coroutine, but we don't care
         ctx.channel
     )
-
+    
+    # Takes (ctx, voice_client, sink, user_id)
     await voice_interface.start_listening(ctx, vc, sink, ctx.author.id)
     await ctx.send('Started listening')
 
+# Function decorated with this will be called when a word matching the function name is detected
+# Should take (ctx, vc)
 @voice_interface.voice_command
 async def leave(ctx, vc):
     await ctx.send("Ok, leaving!")
