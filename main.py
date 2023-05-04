@@ -21,7 +21,7 @@ async def join(ctx):
     
     # Custom Sink for reading .wav encoded audio as a stream
     sink = StreamSink()
-    vc = await voice.channel.connect() 
+    vc = await ctx.author.voice.channel.connect() 
     
     # Regular pycord start_recording method
     vc.start_recording(
